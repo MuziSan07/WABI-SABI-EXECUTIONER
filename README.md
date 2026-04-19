@@ -1,10 +1,10 @@
-# ⚡ Wabi Sabi Executioner
+#  Wabi Sabi Executioner
 
 AI-powered SEO Master Plan Generator. Built with FastAPI + Claude 3.5 + Firecrawl + Google Sheets.
 
 ---
 
-## 🗂️ Project Structure
+##  Project Structure
 
 ```
 wabisabi/
@@ -26,7 +26,7 @@ wabisabi/
 
 ---
 
-## 🚀 Setup
+##  Setup
 
 ### 1. Prerequisites
 - Python 3.11+ (3.14 compatible)
@@ -72,7 +72,7 @@ Open: **http://localhost:8000**
 
 ---
 
-## 🔥 What Gets Generated (7 files in 1 ZIP)
+##  What Gets Generated (7 files in 1 ZIP)
 
 | File | Description |
 |---|---|
@@ -86,7 +86,7 @@ Open: **http://localhost:8000**
 
 ---
 
-## ⚙️ How It Works
+##  How It Works
 
 1. **Firecrawl** scrapes client URL + up to 3 competitor URLs
 2. **Two parallel Claude 3.5 Sonnet calls** generate all 7 files simultaneously (avoids token timeouts)
@@ -96,14 +96,14 @@ Open: **http://localhost:8000**
 
 ---
 
-## 🔐 Safety Features
+##  Safety Features
 - All invented facts are tagged `[CLIENT VERIFICATION REQUIRED]`
 - Press release always has `*** DRAFT ONLY: REQUIRES FOUNDER REVIEW ***` at the top
 - Attribution is opt-in via toggle
 
 ---
 
-## 📦 API Keys Summary
+##  API Keys Summary
 
 | Key | Where to get |
 |---|---|

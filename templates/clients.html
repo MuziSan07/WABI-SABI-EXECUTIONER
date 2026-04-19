@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Clients — Wabi Sabi Executioner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:#0a0a0a; --surface:#111; --surface2:#1a1a1a; --border:#2a2a2a;
+    --accent:#c8f135; --accent2:#ff5c35; --text:#e8e8e8; --muted:#666;
+    --mono:'DM Mono',monospace; --sans:'DM Sans',sans-serif; --display:'Bebas Neue',sans-serif;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;}
+  header{
+    position:sticky;top:0;z-index:100;
+    background:rgba(10,10,10,.92);backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--border);
+    padding:0 2rem;
+    display:flex;align-items:center;justify-content:space-between;height:64px;
+  }
+  .logo{display:flex;align-items:baseline;gap:.5rem;}
+  .logo-text{font-family:var(--display);font-size:1.6rem;letter-spacing:2px;}
+  .logo-badge{font-family:var(--mono);font-size:.65rem;background:var(--accent);color:#000;padding:2px 6px;border-radius:2px;letter-spacing:1px;font-weight:500;}
+  nav{display:flex;gap:1.5rem;}
+  nav a{font-family:var(--mono);font-size:.75rem;color:var(--muted);text-decoration:none;letter-spacing:1px;text-transform:uppercase;transition:color .2s;}
+  nav a:hover{color:var(--accent);}
+  nav a.active{color:var(--accent);}
+  .wrap{max-width:1100px;margin:0 auto;padding:3rem 2rem;}
+  .page-title{font-family:var(--display);font-size:3rem;letter-spacing:2px;margin-bottom:.5rem;}
+  .page-sub{font-family:var(--mono);font-size:.72rem;color:var(--muted);letter-spacing:1px;margin-bottom:2.5rem;}
+  
+  .stats-row{display:flex;gap:1rem;margin-bottom:2rem;flex-wrap:wrap;}
+  .stat{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:1rem 1.5rem;flex:1;min-width:140px;}
+  .stat-num{font-family:var(--display);font-size:2rem;color:var(--accent);line-height:1;}
+  .stat-label{font-family:var(--mono);font-size:.65rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-top:.25rem;}
+
+  .table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+  table{width:100%;border-collapse:collapse;}
+  thead tr{background:var(--surface2);border-bottom:1px solid var(--border);}
+  th{padding:.75rem 1rem;font-family:var(--mono);font-size:.65rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);text-align:left;font-weight:400;}
+  tbody tr{border-bottom:1px solid var(--border);transition:background .15s;}
+  tbody tr:last-child{border-bottom:none;}
+  tbody tr:hover{background:var(--surface2);}
+  td{padding:.85rem 1rem;font-family:var(--mono);font-size:.72rem;color:var(--muted);vertical-align:middle;}
+  td.name{color:var(--text);font-weight:500;}
+  td a{color:var(--accent);text-decoration:none;font-size:.65rem;}
+  td a:hover{text-decoration:underline;}
+  .badge{display:inline-block;padding:2px 8px;border-radius:99px;font-size:.6rem;letter-spacing:.5px;font-weight:500;}
+  .badge-yes{background:rgba(200,241,53,.15);color:var(--accent);}
+  .badge-no{background:var(--surface2);color:var(--muted);}
+  .empty{padding:4rem;text-align:center;font-family:var(--mono);font-size:.8rem;color:var(--muted);}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">
+    <span class="logo-text">WABI SABI</span>
+    <span class="logo-badge">EXECUTIONER v1.0</span>
+  </div>
+  <nav>
+    <a href="/">Generate</a>
+    <a href="/clients" class="active">Clients</a>
+  </nav>
+</header>
+
+<div class="wrap">
+  <h1 class="page-title">CLIENT REGISTRY</h1>
+  <p class="page-sub">// Saved from Google Sheets · Last 10 configurations</p>
+
+  <div class="stats-row">
+    <div class="stat">
+      <div class="stat-num">{{ clients|length }}</div>
+      <div class="stat-label">Total Clients</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">{{ clients|selectattr('wabisabi_attribution','equalto','Yes')|list|length }}</div>
+      <div class="stat-label">With Attribution</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">7</div>
+      <div class="stat-label">Files Per Run</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">2</div>
+      <div class="stat-label">Parallel API Calls</div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    {% if clients %}
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Client</th>
+          <th>URL</th>
+          <th>Competitors</th>
+          <th>Attribution</th>
+          <th>Generated</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in clients[-10:]|reverse %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          <td class="name">{{ c.client_name or '—' }}</td>
+          <td><a href="{{ c.client_url }}" target="_blank">{{ c.client_url|truncate(30) }}</a></td>
+          <td style="color:var(--muted);font-size:.65rem">
+            {% set comps = [c.competitor_1, c.competitor_2, c.competitor_3]|select('ne','')|list %}
+            {{ comps|length }} site{{ 's' if comps|length != 1 }}
+          </td>
+          <td>
+            <span class="badge {% if c.wabisabi_attribution=='Yes' %}badge-yes{% else %}badge-no{% endif %}">
+              {{ c.wabisabi_attribution or 'No' }}
+            </span>
+          </td>
+          <td>{{ (c.timestamp or '')[:10] or '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty">No clients yet. Run a generation to save configurations.</div>
+    {% endif %}
+  </div>
+</div>
+</body>
+</html>

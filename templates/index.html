@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Wabi Sabi Executioner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --surface2: #1a1a1a;
+    --border: #2a2a2a;
+    --accent: #c8f135;
+    --accent2: #ff5c35;
+    --text: #e8e8e8;
+    --muted: #666;
+    --mono: 'DM Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+    --display: 'Bebas Neue', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: .6;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(10,10,10,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px;
+  }
+
+  .logo {
+    display: flex; align-items: baseline; gap: .5rem;
+  }
+  .logo-text {
+    font-family: var(--display);
+    font-size: 1.6rem;
+    letter-spacing: 2px;
+    color: var(--text);
+  }
+  .logo-badge {
+    font-family: var(--mono);
+    font-size: .65rem;
+    background: var(--accent);
+    color: #000;
+    padding: 2px 6px;
+    border-radius: 2px;
+    letter-spacing: 1px;
+    font-weight: 500;
+  }
+
+  nav { display: flex; gap: 1.5rem; }
+  nav a {
+    font-family: var(--mono);
+    font-size: .75rem;
+    color: var(--muted);
+    text-decoration: none;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: color .2s;
+  }
+  nav a:hover { color: var(--accent); }
+  nav a.active { color: var(--accent); }
+
+  /* ─── HERO ─── */
+  .hero {
+    padding: 5rem 2rem 3rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .hero-eyebrow {
+    font-family: var(--mono);
+    font-size: .7rem;
+    color: var(--accent);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  .hero-title {
+    font-family: var(--display);
+    font-size: clamp(3rem, 8vw, 7rem);
+    line-height: .95;
+    letter-spacing: 2px;
+    margin-bottom: 1.5rem;
+  }
+  .hero-title span { color: var(--accent); }
+  .hero-desc {
+    font-size: .95rem;
+    color: var(--muted);
+    max-width: 540px;
+    line-height: 1.6;
+    font-weight: 300;
+  }
+
+  /* ─── PIPELINE PILLS ─── */
+  .pipeline {
+    max-width: 1100px;
+    margin: 0 auto 3rem;
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: wrap;
+  }
+  .pipe-step {
+    display: flex; align-items: center; gap: .6rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: .45rem 1rem;
+    font-family: var(--mono);
+    font-size: .7rem;
+    letter-spacing: .5px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .pipe-step:first-child { border-radius: 4px 0 0 4px; }
+  .pipe-step:last-child { border-radius: 0 4px 4px 0; }
+  .pipe-step .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+  .pipe-arrow {
+    font-family: var(--mono);
+    color: var(--border);
+    font-size: .8rem;
+    padding: 0 .2rem;
+  }
+
+  /* ─── MAIN GRID ─── */
+  .main-wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 2rem 6rem;
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 2rem;
+    align-items: start;
+  }
+
+  /* ─── FORM CARD ─── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: .75rem;
+  }
+  .card-header-num {
+    font-family: var(--display);
+    font-size: 1.4rem;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .card-header-title {
+    font-family: var(--mono);
+    font-size: .8rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+  .card-header-sub {
+    font-family: var(--mono);
+    font-size: .65rem;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+  .card-body { padding: 1.5rem; }
+
+  /* ─── FORM FIELDS ─── */
+  .field { margin-bottom: 1.25rem; }
+  .field:last-child { margin-bottom: 0; }
+
+  label {
+    display: block;
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: .5rem;
+  }
+  label .req { color: var(--accent2); }
+
+  input[type=text], input[type=url], textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: .8rem;
+    padding: .7rem 1rem;
+    border-radius: 4px;
+    outline: none;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  input[type=text]:focus, input[type=url]:focus, textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(200,241,53,.08);
+  }
+  textarea { resize: vertical; min-height: 90px; line-height: 1.5; }
+
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .comp-group { display: flex; flex-direction: column; gap: .75rem; }
+
+  /* Preview button inline */
+  .url-wrap { position: relative; }
+  .url-wrap input { padding-right: 5rem; }
+  .preview-btn {
+    position: absolute; right: .5rem; top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: .6rem;
+    padding: .25rem .5rem;
+    border-radius: 3px;
+    cursor: pointer;
+    letter-spacing: .5px;
+    transition: all .2s;
+  }
+  .preview-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ─── TOGGLE ─── */
+  .toggle-field {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+  }
+  .toggle-info { flex: 1; }
+  .toggle-label {
+    font-family: var(--mono);
+    font-size: .75rem;
+    color: var(--text);
+    letter-spacing: .5px;
+  }
+  .toggle-desc {
+    font-family: var(--mono);
+    font-size: .62rem;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+  .toggle-switch { position: relative; flex-shrink: 0; margin-left: 1rem; }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
+  .toggle-track {
+    display: block;
+    width: 44px; height: 24px;
+    background: var(--border);
+    border-radius: 99px;
+    cursor: pointer;
+    transition: background .2s;
+    position: relative;
+  }
+  .toggle-track::after {
+    content: '';
+    position: absolute;
+    left: 3px; top: 3px;
+    width: 18px; height: 18px;
+    background: var(--muted);
+    border-radius: 50%;
+    transition: transform .2s, background .2s;
+  }
+  .toggle-switch input:checked + .toggle-track { background: var(--accent); }
+  .toggle-switch input:checked + .toggle-track::after {
+    transform: translateX(20px);
+    background: #000;
+  }
+
+  /* ─── SUBMIT BUTTON ─── */
+  .submit-wrap { margin-top: 1.5rem; }
+  .btn-generate {
+    width: 100%;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    font-family: var(--display);
+    font-size: 1.2rem;
+    letter-spacing: 2px;
+    padding: 1rem 2rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all .2s;
+    display: flex; align-items: center; justify-content: center; gap: .75rem;
+  }
+  .btn-generate:hover {
+    background: #d8ff3a;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 32px rgba(200,241,53,.2);
+  }
+  .btn-generate:active { transform: translateY(0); }
+  .btn-generate:disabled {
+    background: var(--border);
+    color: var(--muted);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+  .btn-icon { font-size: 1rem; }
+
+  /* ─── SIDEBAR ─── */
+  .sidebar { display: flex; flex-direction: column; gap: 1.5rem; }
+
+  /* Output files list */
+  .output-list { list-style: none; padding: 0; }
+  .output-list li {
+    display: flex; align-items: center; gap: .75rem;
+    padding: .65rem 0;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: .72rem;
+    color: var(--muted);
+  }
+  .output-list li:last-child { border-bottom: none; }
+  .output-list .file-icon {
+    width: 24px; height: 24px;
+    border-radius: 3px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .55rem;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .ext-json { background: rgba(200,241,53,.15); color: var(--accent); }
+  .ext-html { background: rgba(255,92,53,.15); color: var(--accent2); }
+  .ext-txt  { background: rgba(100,100,255,.15); color: #8888ff; }
+  .ext-csv  { background: rgba(0,200,150,.15); color: #00c896; }
+  .ext-md   { background: rgba(255,200,0,.15); color: #ffc800; }
+
+  /* Status card */
+  .status-card {
+    padding: 1.25rem;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    font-family: var(--mono);
+  }
+  .status-idle { background: var(--surface); }
+  .status-running { background: rgba(200,241,53,.05); border-color: rgba(200,241,53,.3); }
+  .status-done { background: rgba(0,200,150,.05); border-color: rgba(0,200,150,.3); }
+  .status-error { background: rgba(255,92,53,.05); border-color: rgba(255,92,53,.3); }
+
+  .status-label {
+    font-size: .65rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: .75rem;
+  }
+  .status-idle .status-label { color: var(--muted); }
+  .status-running .status-label { color: var(--accent); }
+  .status-done .status-label { color: #00c896; }
+  .status-error .status-label { color: var(--accent2); }
+
+  .status-msg { font-size: .75rem; color: var(--muted); line-height: 1.5; }
+
+  .progress-bar {
+    margin-top: .75rem;
+    height: 3px;
+    background: var(--border);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 99px;
+    width: 0%;
+    transition: width 0.4s ease;
+  }
+  @keyframes indeterminate {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(300%); }
+  }
+  .progress-fill.running {
+    width: 40% !important;
+    animation: indeterminate 1.5s ease-in-out infinite;
+  }
+
+  /* ─── STEP INDICATORS ─── */
+  .steps-list { list-style: none; }
+  .step-item {
+    display: flex; gap: .75rem; align-items: flex-start;
+    padding: .6rem 0;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: .7rem;
+    color: var(--muted);
+  }
+  .step-item:last-child { border-bottom: none; }
+  .step-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--border);
+    flex-shrink: 0; margin-top: 3px;
+    transition: background .3s;
+  }
+  .step-item.done .step-dot { background: #00c896; }
+  .step-item.active .step-dot { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+  .step-item.done { color: var(--text); }
+  .step-item.active { color: var(--text); }
+
+  /* ─── TOAST ─── */
+  .toast-wrap {
+    position: fixed; bottom: 2rem; right: 2rem;
+    display: flex; flex-direction: column; gap: .5rem;
+    z-index: 999;
+  }
+  .toast {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: .75rem 1.25rem;
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: .72rem;
+    color: var(--text);
+    max-width: 320px;
+    animation: slideIn .3s ease;
+    backdrop-filter: blur(8px);
+  }
+  .toast.error { border-left-color: var(--accent2); }
+  @keyframes slideIn {
+    from { transform: translateX(120%); opacity: 0; }
+    to   { transform: translateX(0); opacity: 1; }
+  }
+
+  /* ─── PREVIEW PANEL ─── */
+  .preview-panel {
+    font-family: var(--mono);
+    font-size: .68rem;
+    color: var(--muted);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: .75rem;
+    margin-top: .5rem;
+    line-height: 1.6;
+    display: none;
+    max-height: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .main-wrap { grid-template-columns: 1fr; }
+    .field-row { grid-template-columns: 1fr; }
+    .pipeline { gap: 4px; }
+    .pipe-step { font-size: .6rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span class="logo-text">WABI SABI</span>
+    <span class="logo-badge">EXECUTIONER v1.0</span>
+  </div>
+  <nav>
+    <a href="/" class="active">Generate</a>
+    <a href="/clients">Clients</a>
+  </nav>
+</header>
+
+<div class="hero">
+  <p class="hero-eyebrow">// AI-Powered SEO Master Plan Engine</p>
+  <h1 class="hero-title">EXECUTE<br/>YOUR <span>CONTENT</span><br/>STRATEGY</h1>
+  <p class="hero-desc">Scrape competitors. Generate schema, architecture, semantic tables, and reports — all in one shot. Powered by Claude 3.5 with dual parallel API calls.</p>
+</div>
+
+<div class="pipeline">
+  <div class="pipe-step"><span class="dot"></span>CLIENT URL</div>
+  <span class="pipe-arrow">→</span>
+  <div class="pipe-step"><span class="dot"></span>FIRECRAWL SCRAPE</div>
+  <span class="pipe-arrow">→</span>
+  <div class="pipe-step"><span class="dot"></span>CLAUDE CALL A</div>
+  <span class="pipe-arrow">+</span>
+  <div class="pipe-step"><span class="dot"></span>CLAUDE CALL B</div>
+  <span class="pipe-arrow">→</span>
+  <div class="pipe-step"><span class="dot"></span>ZIP DOWNLOAD</div>
+  <span class="pipe-arrow">→</span>
+  <div class="pipe-step"><span class="dot"></span>INDEXNOW PING</div>
+</div>
+
+<div class="main-wrap">
+  <!-- FORM -->
+  <div class="form-col">
+    <form id="genForm">
+
+      <!-- CLIENT INFO -->
+      <div class="card" style="margin-bottom:1.5rem">
+        <div class="card-header">
+          <div class="card-header-num">01</div>
+          <div>
+            <div class="card-header-title">Client Information</div>
+            <div class="card-header-sub">Primary website to analyze</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="field-row">
+            <div class="field">
+              <label>Client Name <span class="req">*</span></label>
+              <input type="text" name="client_name" placeholder="Acme Corporation" required/>
+            </div>
+            <div class="field">
+              <label>Client URL <span class="req">*</span></label>
+              <div class="url-wrap">
+                <input type="url" name="client_url" id="client_url" placeholder="https://acme.com" required/>
+                <button type="button" class="preview-btn" onclick="previewUrl('client_url','client_preview')">PEEK</button>
+              </div>
+              <div class="preview-panel" id="client_preview"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COMPETITORS -->
+      <div class="card" style="margin-bottom:1.5rem">
+        <div class="card-header">
+          <div class="card-header-num">02</div>
+          <div>
+            <div class="card-header-title">Competitor URLs</div>
+            <div class="card-header-sub">Up to 3 competitor sites to scrape via Firecrawl</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="comp-group">
+            <div class="field">
+              <label>Competitor 1</label>
+              <div class="url-wrap">
+                <input type="url" name="competitor_1" id="comp1" placeholder="https://competitor1.com"/>
+                <button type="button" class="preview-btn" onclick="previewUrl('comp1','prev1')">PEEK</button>
+              </div>
+              <div class="preview-panel" id="prev1"></div>
+            </div>
+            <div class="field">
+              <label>Competitor 2</label>
+              <div class="url-wrap">
+                <input type="url" name="competitor_2" id="comp2" placeholder="https://competitor2.com"/>
+                <button type="button" class="preview-btn" onclick="previewUrl('comp2','prev2')">PEEK</button>
+              </div>
+              <div class="preview-panel" id="prev2"></div>
+            </div>
+            <div class="field">
+              <label>Competitor 3</label>
+              <div class="url-wrap">
+                <input type="url" name="competitor_3" id="comp3" placeholder="https://competitor3.com"/>
+                <button type="button" class="preview-btn" onclick="previewUrl('comp3','prev3')">PEEK</button>
+              </div>
+              <div class="preview-panel" id="prev3"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AUDIENCE -->
+      <div class="card" style="margin-bottom:1.5rem">
+        <div class="card-header">
+          <div class="card-header-num">03</div>
+          <div>
+            <div class="card-header-title">Audience Brain-Dump</div>
+            <div class="card-header-sub">Raw notes about the target audience → Claude generates Q&A CSV</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="field">
+            <label>Audience Notes</label>
+            <textarea name="audience" placeholder="e.g. B2B SaaS founders in the US, aged 35-55, struggle with churn, care about LTV, frequently compare tools on G2 and Reddit, respond to case studies and ROI data..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- ATTRIBUTION -->
+      <div class="card" style="margin-bottom:1.5rem">
+        <div class="card-header">
+          <div class="card-header-num">04</div>
+          <div>
+            <div class="card-header-title">Wabi Sabi Attribution</div>
+            <div class="card-header-sub">Inject agency name into schema disambiguatingDescription</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="toggle-field">
+            <div class="toggle-info">
+              <div class="toggle-label">Add Agency Attribution to Schema</div>
+              <div class="toggle-desc">If YES → agency name added to disambiguatingDescription in deep-schema.json</div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" name="wabisabi_attribution" id="attrToggle" value="yes"/>
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+          <div id="attrStatus" style="font-family:var(--mono);font-size:.65rem;color:var(--muted);margin-top:.6rem;padding-left:.25rem">
+            Status: <span id="attrVal" style="color:var(--muted)">NO — Schema will be clean</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="submit-wrap">
+        <button type="submit" class="btn-generate" id="submitBtn">
+          <span class="btn-icon">⚡</span>
+          <span id="btnText">EXECUTE MASTER PLAN</span>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+
+    <!-- Status -->
+    <div class="status-card status-idle" id="statusCard">
+      <div class="status-label" id="statusLabel">// READY</div>
+      <div class="status-msg" id="statusMsg">Fill in the form and hit EXECUTE to generate your 7-file master plan ZIP.</div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+
+    <!-- Steps -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-header-title">Pipeline Steps</div>
+          <div class="card-header-sub">Live execution tracker</div>
+        </div>
+      </div>
+      <div class="card-body" style="padding: 0.75rem 1.25rem;">
+        <ul class="steps-list" id="stepsList">
+          <li class="step-item" id="s1"><span class="step-dot"></span>Scraping client URL via Firecrawl</li>
+          <li class="step-item" id="s2"><span class="step-dot"></span>Scraping competitor URLs</li>
+          <li class="step-item" id="s3"><span class="step-dot"></span>Claude Call A — schema, tables, HTML, CSV</li>
+          <li class="step-item" id="s4"><span class="step-dot"></span>Claude Call B — reports, press release, LLM</li>
+          <li class="step-item" id="s5"><span class="step-dot"></span>Pinging IndexNow API</li>
+          <li class="step-item" id="s6"><span class="step-dot"></span>Saving to Google Sheets</li>
+          <li class="step-item" id="s7"><span class="step-dot"></span>Packaging ZIP download</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Output files -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-header-title">Output Files</div>
+          <div class="card-header-sub">7 files packed into one ZIP</div>
+        </div>
+      </div>
+      <div class="card-body" style="padding: .75rem 1.25rem;">
+        <ul class="output-list">
+          <li><div class="file-icon ext-json">JSON</div>deep-schema.json</li>
+          <li><div class="file-icon ext-html">HTML</div>rag-architecture.html</li>
+          <li><div class="file-icon ext-html">HTML</div>semantic-tables.html</li>
+          <li><div class="file-icon ext-txt">TXT</div>llms-full.txt</li>
+          <li><div class="file-icon ext-csv">CSV</div>ai-training-faq.csv</li>
+          <li><div class="file-icon ext-md">MD</div>client-facing-report.md</li>
+          <li><div class="file-icon ext-md">MD</div>press-release-draft.md</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+// ─── Toggle label ───
+const toggle = document.getElementById('attrToggle');
+const attrVal = document.getElementById('attrVal');
+toggle.addEventListener('change', () => {
+  if (toggle.checked) {
+    attrVal.textContent = 'YES — Agency name injected into schema';
+    attrVal.style.color = 'var(--accent)';
+  } else {
+    attrVal.textContent = 'NO — Schema will be clean';
+    attrVal.style.color = 'var(--muted)';
+  }
+});
+
+// ─── Toast ───
+function toast(msg, isError=false) {
+  const tw = document.getElementById('toastWrap');
+  const el = document.createElement('div');
+  el.className = 'toast' + (isError ? ' error' : '');
+  el.textContent = msg;
+  tw.appendChild(el);
+  setTimeout(() => el.remove(), 4500);
+}
+
+// ─── URL Preview ───
+async function previewUrl(inputId, panelId) {
+  const url = document.getElementById(inputId).value.trim();
+  if (!url) { toast('Enter a URL first', true); return; }
+  const panel = document.getElementById(panelId);
+  panel.style.display = 'block';
+  panel.textContent = 'Fetching preview...';
+  const fd = new FormData();
+  fd.append('url', url);
+  try {
+    const r = await fetch('/api/scrape-preview', {method:'POST', body: fd});
+    const d = await r.json();
+    if (d.success) {
+      panel.textContent = d.preview || '(no content found)';
+    } else {
+      panel.textContent = `Error: ${d.error}`;
+    }
+  } catch(e) {
+    panel.textContent = `Error: ${e.message}`;
+  }
+}
+
+// ─── Step helpers ───
+function setStep(id, state) {
+  const el = document.getElementById(id);
+  el.className = 'step-item ' + state;
+}
+
+function resetSteps() {
+  ['s1','s2','s3','s4','s5','s6','s7'].forEach(id => {
+    document.getElementById(id).className = 'step-item';
+  });
+}
+
+// ─── Form submit ───
+document.getElementById('genForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('submitBtn');
+  const btnText = document.getElementById('btnText');
+  const statusCard = document.getElementById('statusCard');
+  const statusLabel = document.getElementById('statusLabel');
+  const statusMsg = document.getElementById('statusMsg');
+  const progressFill = document.getElementById('progressFill');
+
+  btn.disabled = true;
+  btnText.textContent = 'EXECUTING...';
+  resetSteps();
+
+  // Set running state
+  statusCard.className = 'status-card status-running';
+  statusLabel.textContent = '// RUNNING';
+  statusMsg.textContent = 'Scraping URLs and calling Claude in parallel...';
+  progressFill.className = 'progress-fill running';
+
+  // Animate steps
+  setStep('s1','active');
+  setTimeout(() => { setStep('s1','done'); setStep('s2','active'); }, 1500);
+  setTimeout(() => { setStep('s2','done'); setStep('s3','active'); setStep('s4','active'); statusMsg.textContent = 'Parallel Claude API calls in progress...'; }, 3500);
+
+  const fd = new FormData(e.target);
+  // Handle checkbox value manually
+  if (!document.getElementById('attrToggle').checked) {
+    fd.set('wabisabi_attribution','no');
+  } else {
+    fd.set('wabisabi_attribution','yes');
+  }
+
+  try {
+    const r = await fetch('/api/generate', { method: 'POST', body: fd });
+
+    if (!r.ok) {
+      const err = await r.json();
+      throw new Error(err.detail || 'Server error');
+    }
+
+    setTimeout(() => { setStep('s3','done'); setStep('s4','done'); setStep('s5','active'); statusMsg.textContent = 'Pinging IndexNow & saving to Sheets...'; }, 500);
+    setTimeout(() => { setStep('s5','done'); setStep('s6','done'); setStep('s7','active'); }, 700);
+
+    const blob = await r.blob();
+    const cd = r.headers.get('Content-Disposition') || '';
+    const match = cd.match(/filename=(.+)/);
+    const filename = match ? match[1] : 'wabisabi-output.zip';
+
+    // Trigger download
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    setStep('s7','done');
+    progressFill.className = 'progress-fill';
+    progressFill.style.width = '100%';
+    statusCard.className = 'status-card status-done';
+    statusLabel.textContent = '// COMPLETE';
+    statusMsg.textContent = `✓ ZIP downloaded: ${filename}`;
+    toast('Master plan ZIP generated and downloaded!');
+
+  } catch(err) {
+    setStep('s3',''); setStep('s4','');
+    progressFill.className = 'progress-fill';
+    progressFill.style.width = '0%';
+    statusCard.className = 'status-card status-error';
+    statusLabel.textContent = '// ERROR';
+    statusMsg.textContent = err.message;
+    toast(err.message, true);
+  }
+
+  btn.disabled = false;
+  btnText.textContent = 'EXECUTE MASTER PLAN';
+});
+</script>
+</body>
+</html>

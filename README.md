@@ -1,114 +1,149 @@
-#  Wabi Sabi Executioner
+# Wabi Sabi Executioner
 
-AI-powered SEO Master Plan Generator. Built with FastAPI + Claude 3.5 + Firecrawl + Google Sheets.
+An AI-powered SEO master-plan generator. Given a client URL and up to three
+competitor URLs, it scrapes the sites, runs two parallel Claude calls to produce
+a full set of SEO deliverables, pings IndexNow, logs the run to Google Sheets,
+and returns everything as a single ZIP.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.11+-3776AB.svg)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/API-FastAPI-009688.svg)](https://fastapi.tiangolo.com/)
 
 ---
 
-##  Project Structure
+## Tech stack
+
+| Layer | Technology |
+|-------|------------|
+| Web framework | FastAPI, Uvicorn |
+| Templating | Jinja2 |
+| Content generation | Anthropic Claude (Sonnet 4) |
+| Web scraping | Firecrawl |
+| Client registry | Google Sheets (gspread) |
+| Search notification | IndexNow |
+
+---
+
+## Project structure
 
 ```
-wabisabi/
-├── main.py                   # FastAPI app & routes
-├── config.py                 # Settings from .env
-├── requirements.txt          # Python dependencies
-├── .env                      # ← YOUR API KEYS GO HERE
-├── credentials.json          # ← Google Service Account JSON
+WABI-SABI-EXECUTIONER/
+├── main.py                     # FastAPI app and routes
+├── config.py                   # Settings loaded from .env
+├── requirements.txt
+├── .env.example                # Environment template
 ├── services/
-│   ├── claude_service.py     # Dual parallel Claude API calls
-│   ├── firecrawl_service.py  # Competitor URL scraping
-│   ├── sheets_service.py     # Google Sheets save/load
-│   └── indexnow_service.py   # IndexNow API ping
-├── templates/
-│   ├── index.html            # Main generation UI
-│   └── clients.html          # Client registry page
-└── static/                   # CSS/JS assets
+│   ├── claude_service.py       # Two parallel Claude calls -> 7 output files
+│   ├── firecrawl_service.py    # Client and competitor scraping
+│   ├── sheets_service.py       # Google Sheets save / load
+│   └── indexnow_service.py     # IndexNow ping
+└── templates/
+    ├── index.html              # Main generation UI
+    └── clients.html            # Client registry page
 ```
+
+A `static/` directory is optional; it is mounted at `/static` only if present.
 
 ---
 
-##  Setup
+## Prerequisites
 
-### 1. Prerequisites
-- Python 3.11+ (3.14 compatible)
-- pip
+- Python 3.11 or newer
+- An Anthropic API key and a Firecrawl API key
+- A Google service account with the Sheets and Drive APIs enabled (for the
+  client registry)
 
-### 2. Install dependencies
+---
+
+## Setup
+
 ```bash
+# 1. Clone the repository
+git clone https://github.com/MuziSan07/WABI-SABI-EXECUTIONER.git
+cd WABI-SABI-EXECUTIONER
+
+# 2. Create and activate a virtual environment
+python -m venv venv
+source venv/bin/activate        # Windows: venv\Scripts\activate
+
+# 3. Install dependencies
 pip install -r requirements.txt
-```
 
-### 3. Configure API Keys
-Edit the `.env` file:
-```env
-ANTHROPIC_API_KEY=sk-ant-...
-FIRECRAWL_API_KEY=fc-...
-GOOGLE_CREDENTIALS_PATH=credentials.json
-GOOGLE_SHEET_ID=1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms
-INDEXNOW_KEY=your-random-key-string
-AGENCY_NAME=Wabi Sabi Agency
-```
+# 4. Configure environment
+cp .env.example .env
+# then edit .env with your keys
 
-### 4. Google Sheets Setup
-1. Go to [Google Cloud Console](https://console.cloud.google.com)
-2. Create a new project → Enable **Google Sheets API** and **Google Drive API**
-3. Create a **Service Account** → Download JSON → save as `credentials.json` in project root
-4. Create a Google Sheet → Share it with the service account email
-5. Copy the Sheet ID from the URL: `https://docs.google.com/spreadsheets/d/SHEET_ID/edit`
-
-### 5. IndexNow Key
-Just make up any random alphanumeric string (e.g., `a3f7b2d9e1c4`). No signup needed.
-You'd host a `your-key.txt` file on the client domain for verification — for now it just pings the API.
-
-### 6. Run the app
-```bash
+# 5. Run
 python main.py
 ```
-Or with uvicorn directly:
-```bash
-uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-```
 
-Open: **http://localhost:8000**
+The app runs at `http://localhost:8000` (configurable via `APP_HOST` / `APP_PORT`).
 
 ---
 
-##  What Gets Generated (7 files in 1 ZIP)
+## Configuration
+
+All settings are read from environment variables (via `.env`). See
+`.env.example` for a template.
+
+| Variable | Description |
+|----------|-------------|
+| `ANTHROPIC_API_KEY` | Anthropic API key ([console.anthropic.com](https://console.anthropic.com)) |
+| `FIRECRAWL_API_KEY` | Firecrawl API key ([firecrawl.dev](https://firecrawl.dev)) |
+| `GOOGLE_CREDENTIALS_PATH` | Path to the Google service-account JSON (default `credentials.json`) |
+| `GOOGLE_SHEET_ID` | Target Google Sheet ID, taken from its URL |
+| `INDEXNOW_KEY` | A self-generated random key string |
+| `AGENCY_NAME` | Agency name used for optional attribution |
+| `APP_HOST` / `APP_PORT` | Bind address and port (default `0.0.0.0:8000`) |
+
+### Google Sheets
+
+1. In the [Google Cloud Console](https://console.cloud.google.com), create a
+   project and enable the **Google Sheets API** and **Google Drive API**.
+2. Create a **Service Account**, download its JSON key, and save it as
+   `credentials.json` in the project root (git-ignored).
+3. Create a Google Sheet and share it with the service-account email.
+4. Copy the Sheet ID from the URL into `GOOGLE_SHEET_ID`.
+
+---
+
+## What gets generated
+
+Each run returns a ZIP containing seven files plus a `MANIFEST.txt`:
 
 | File | Description |
-|---|---|
-| `deep-schema.json` | Full JSON-LD schema.org markup (Organization, WebSite, FAQ, etc.) |
-| `rag-architecture.html` | RAG content architecture recommendations |
-| `semantic-tables.html` | Competitor comparison tables |
-| `ai-training-faq.csv` | 20 targeted Q&As from audience brain-dump |
-| `llms-full.txt` | LLM-optimized content brief with date stamp |
-| `client-facing-report.md` | Polished client report with 90-day roadmap |
-| `press-release-draft.md` | AP-style press release (DRAFT ONLY warning hardcoded) |
+|------|-------------|
+| `deep-schema.json` | JSON-LD schema.org markup (Organization, WebSite, FAQ, etc.) |
+| `rag-architecture.html` | RAG content-architecture recommendations |
+| `semantic-tables.html` | Client vs competitor comparison tables |
+| `ai-training-faq.csv` | 20 targeted Q&As from the audience brief |
+| `llms-full.txt` | LLM-optimized content brief, date-stamped |
+| `client-facing-report.md` | Client report with a 90-day roadmap |
+| `press-release-draft.md` | AP-style press release (always marked DRAFT) |
 
 ---
 
-##  How It Works
+## How it works
 
-1. **Firecrawl** scrapes client URL + up to 3 competitor URLs
-2. **Two parallel Claude 3.5 Sonnet calls** generate all 7 files simultaneously (avoids token timeouts)
-3. Files are **zipped** and returned as a download
-4. **IndexNow API** is pinged with the client URL
-5. Config is **saved to Google Sheets** for the client registry
-
----
-
-##  Safety Features
-- All invented facts are tagged `[CLIENT VERIFICATION REQUIRED]`
-- Press release always has `*** DRAFT ONLY: REQUIRES FOUNDER REVIEW ***` at the top
-- Attribution is opt-in via toggle
+1. **Firecrawl** scrapes the client URL and up to three competitor URLs.
+2. **Two parallel Claude calls** generate the seven files at once (one for
+   data/code files, one for text/markdown) to avoid timeouts.
+3. The files are zipped and returned as a download.
+4. **IndexNow** is pinged with the client URL.
+5. The run is **saved to Google Sheets** for the client registry.
 
 ---
 
-##  API Keys Summary
+## Safety features
 
-| Key | Where to get |
-|---|---|
-| `ANTHROPIC_API_KEY` | [console.anthropic.com](https://console.anthropic.com) |
-| `FIRECRAWL_API_KEY` | [firecrawl.dev](https://firecrawl.dev) |
-| `credentials.json` | Google Cloud Console → Service Accounts |
-| `GOOGLE_SHEET_ID` | From your Google Sheet URL |
-| `INDEXNOW_KEY` | Self-generated random string |
+- Invented facts are tagged `[CLIENT VERIFICATION REQUIRED]` rather than
+  presented as verified.
+- The press release always begins with `*** DRAFT ONLY: REQUIRES FOUNDER REVIEW ***`.
+- Agency attribution is opt-in via a toggle.
+
+---
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file
+for details.

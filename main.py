@@ -3,9 +3,10 @@ main.py — Wabi Sabi Executioner
 FastAPI backend powering the full SEO content generation pipeline.
 """
 import io
+import os
 import zipfile
 import asyncio
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Annotated
 
 from fastapi import FastAPI, Form, HTTPException, Request
@@ -21,7 +22,9 @@ from services.sheets_service import save_client, load_clients
 
 app = FastAPI(title="Wabi Sabi Executioner", version="1.0.0")
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+# Mount static assets only if the directory exists (optional in this app).
+if os.path.isdir("static"):
+    app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 
@@ -98,7 +101,7 @@ async def generate(
                 zf.writestr(filename, content)
             # Add a generation manifest
             manifest = f"""WABI SABI EXECUTIONER — Generation Manifest
-Generated: {datetime.utcnow().isoformat()} UTC
+Generated: {datetime.now(timezone.utc).isoformat()}
 Client: {client_name}
 Client URL: {client_url}
 Competitor URLs: {', '.join(competitor_urls) or 'None'}
@@ -111,7 +114,7 @@ FILES INCLUDED:
         zip_buffer.seek(0)
 
         safe_name = client_name.lower().replace(" ", "-")
-        filename = f"wabisabi-{safe_name}-{datetime.utcnow().strftime('%Y%m%d')}.zip"
+        filename = f"wabisabi-{safe_name}-{datetime.now(timezone.utc).strftime('%Y%m%d')}.zip"
 
         return StreamingResponse(
             zip_buffer,

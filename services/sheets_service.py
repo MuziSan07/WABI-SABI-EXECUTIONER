@@ -33,7 +33,7 @@ def _get_sheet():
 def save_client(data: dict) -> bool:
     try:
         ws = _get_sheet()
-        from datetime import datetime
+        from datetime import datetime, timezone
         row = [
             data.get("client_name", ""),
             data.get("client_url", ""),
@@ -42,7 +42,7 @@ def save_client(data: dict) -> bool:
             data.get("competitor_3", ""),
             data.get("audience", ""),
             "Yes" if data.get("wabisabi_attribution") else "No",
-            datetime.utcnow().isoformat(),
+            datetime.now(timezone.utc).isoformat(),
         ]
         ws.append_row(row)
         return True
